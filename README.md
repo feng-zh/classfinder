@@ -128,7 +128,7 @@ To see all sub class or interface names for the specified class, use `-sub` para
 
 #### List Incoming Referring Classes (References) 
 
-To get reference of the specified class over the jar files, use `-ref` parameter and full class name can provide all class which dpends on this class.
+To get reference of the specified class over the jar files, use `-ref` parameter and full class name can provide all class which depends on this class.
 
     C:\>dir /b *.jar | java -jar classfinder.jar -ref java.lang.Shutdown 
     -- Reference class for [java.lang.Shutdown] 
@@ -188,9 +188,10 @@ During some application running, if want to know where the log string is created
     Options: 
     ... 
 
+
 #### Display Text File Content 
 
-If the jar file contains some property file, xml file, or java source file, use `-cat` parameter can help to view its text directly without extracting them. 
+If the jar file contains some property file, XML file, or java source file, use `-cat` parameter can help to view its text directly without extracting them. 
  
     C:\>dir /b *.jar | java -jar classfinder.jar -cat ClassFinder 
     ::[1] com/hp/it/gadsc/et/ei/tools/classfinder/ClassFinder.class 
@@ -204,6 +205,7 @@ If the jar file contains some property file, xml file, or java source file, use 
     
     public interface ClassFinder { 
     ... 
+
 
 ### Full Option 
 
