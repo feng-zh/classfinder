@@ -20,31 +20,31 @@ Basic Usage
 The classfinder support two ways by specifying jar files. 
 
 - Add jar files as parameter `-classpath`
-```
-	java -jar classfinder.jar -classpath file1.jar;file2.jar;file3.jar NameToSearch 
-```
-- Use jar file list from Std in (or pipeline) 
-``` 
-	dir /b path\to\folder\*.jar | java -jar classfinder.jar NameToSearch 
-```
-or more powerful command `find` in Unix
-```
-	find /path/to/folder -name "*.jar" | java -jar classfinder.jar NameToSearch 
-```
-To know which jar files are involved, use "-verbose" parameter to enable file list: 
-```
-$ find /path/to/folder -name "*.jar" | java -jar classfinder.jar -verbose NameToSearch1 NameSearch2 
-***** START CLASSPATH ***** 
-/path/to/folder/file1.jar 
-/path/to/folder/file2.jar 
-/path/to/folder/sub/file3.jar 
-***** END CLASSPATH ***** 
 
-***** START ARGUMENTS ***** 
-NameToSearch1 
-NameToSearch2 
-***** END ARGUMENTS ***** 
-```
+	`java -jar classfinder.jar -classpath file1.jar;file2.jar;file3.jar NameToSearch` 
+
+- Use jar file list from Std in (or pipeline) 
+
+	`dir /b path\to\folder\*.jar | java -jar classfinder.jar NameToSearch` 
+
+	or more powerful command `find` in Unix
+
+	`find /path/to/folder -name "*.jar" | java -jar classfinder.jar NameToSearch` 
+
+To know which jar files are involved, use "-verbose" parameter to enable file list: 
+
+    $ find /path/to/folder -name "*.jar" | java -jar classfinder.jar -verbose NameToSearch1 NameSearch2 
+    ***** START CLASSPATH ***** 
+    /path/to/folder/file1.jar 
+    /path/to/folder/file2.jar 
+    /path/to/folder/sub/file3.jar 
+    ***** END CLASSPATH ***** 
+    
+    ***** START ARGUMENTS ***** 
+    NameToSearch1 
+    NameToSearch2 
+    ***** END ARGUMENTS ***** 
+
 
 #### Display Full Class Name and File Location 
 
@@ -70,6 +70,7 @@ In addition, a switch flag `-group` can group result by jar file name.
     sun.rmi.server.Util 
     sun.text.normalizer.Utility 
      
+
 #### Find Duplicate Classes 
 
 To list duplicate class by its simple name, or wild card names, use `-duplicate` parameter with name parameter can list all duplicated class. The jar file name is listed by its path order, which means the effective one is in the first. 
@@ -83,6 +84,7 @@ To list duplicate class by its simple name, or wild card names, use `-duplicate`
     C:\classfinder-dup.jar 
     C:\classfinder.jar 
 
+
 #### List Class under Package Name 
 
 All class under the specified package (and its sub-packages) can be displayed over all jar files with `-package` parameter and name parameter. 
@@ -93,6 +95,7 @@ All class under the specified package (and its sub-packages) can be displayed ov
     java.lang.ApplicationShutdownHooks$1 
     java.lang.StrictMath 
     ... 
+
 
 ### Class Relationship Usage 
 
@@ -109,6 +112,7 @@ To see all super class and interface names for the specified class, use `-super`
     java.lang.Cloneable 
     java.util.Map 
 
+
 #### List Sub-Classes (Down Hierarchy) 
 
 To see all sub class or interface names for the specified class, use `-sub` parameter and full class name.
@@ -120,6 +124,7 @@ To see all sub class or interface names for the specified class, use `-sub` para
     java.security.Provider 
     ... 
     sun.security.smartcardio.SunPCSC 
+
 
 #### List Incoming Referring Classes (References) 
 
@@ -134,6 +139,7 @@ To get reference of the specified class over the jar files, use `-ref` parameter
     java.lang.Shutdown$Lock 
     java.lang.System$2 
     java.lang.Terminator$1 
+
 
 #### List Outgoing Depending Classes 
 
@@ -152,6 +158,7 @@ The result shows existing dependence class name, and non-founded dependence clas
     com.sun.org.apache.bcel.internal.classfile.ClassParser 
     ... 
 
+
 #### List Incoming Referring Classes for Method (Caller List) 
 
 To get reference of the specified method in the class, use `-mref` parameter and full method with class name can provide related class name list. 
@@ -164,6 +171,7 @@ To get reference of the specified method in the class, use `-mref` parameter and
     com.sun.corba.se.impl.activation.ServerMain 
     com.sun.corba.se.impl.naming.cosnaming.TransientNameServer 
     ... 
+
 
 ### Other Usage 
 
