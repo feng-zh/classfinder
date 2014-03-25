@@ -27,7 +27,11 @@ The classfinder support two ways by specifying jar files.
 
 	`dir /b path\to\folder\*.jar | java -jar classfinder.jar NameToSearch` 
 
-	or more powerful command `find` in Unix
+    or recursive search from current work directory by enabling `/s` option
+
+    `dir /b /s *.jar | java -jar classfinder.jar NameToSearch` 
+
+	or more powerful command `find` in Unix/Linux
 
 	`find /path/to/folder -name "*.jar" | java -jar classfinder.jar NameToSearch` 
 
