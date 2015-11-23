@@ -16,17 +16,28 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 
+import com.hp.it.gadsc.et.ei.tools.classfinder.ClassParserProvider.Jclass;
+
 import sun.misc.Resource;
 import sun.misc.URLClassPath;
-
-import com.sun.org.apache.bcel.internal.classfile.ClassParser;
-import com.sun.org.apache.bcel.internal.classfile.DescendingVisitor;
-import com.sun.org.apache.bcel.internal.classfile.JavaClass;
 
 @SuppressWarnings("restriction")
 public class ClassPathFinder extends AbstractClassFinder implements ClassFinder {
 
+	private static ClassParserProvider parserProvider = detectParseProvider();
+
 	private final URLClassPath urlClassPath;
+
+	private static ClassParserProvider detectParseProvider() {
+		Class<?> asmProviderType;
+		try {
+			asmProviderType = Class.forName("com.hp.it.gadsc.et.ei.tools.classfinder.AsmClassParserProvider");
+			return (ClassParserProvider) asmProviderType.newInstance();
+		} catch (Throwable e) {
+			System.err.println("WARN: Use BCEL class parsr.");
+			return new BcelClassParserProvider();
+		}
+	}
 
 	public ClassPathFinder(ClassPathBuilder builder) {
 		urlClassPath = new URLClassPath(builder.getURLs());
@@ -47,8 +58,7 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 			URLClassPath classPath = getURLClassPath();
 			Class<?> jarLoaderClz;
 			try {
-				jarLoaderClz = Util.getDefaultLoader().loadClass(
-						"sun.misc.URLClassPath$JarLoader");
+				jarLoaderClz = Util.getDefaultLoader().loadClass("sun.misc.URLClassPath$JarLoader");
 			} catch (ClassNotFoundException ignored) {
 				return new URL[] { source };
 			}
@@ -70,14 +80,11 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 					break;
 				}
 				try {
-					Object loader = Util.invokeMethod(classPath,
-							URLClassPath.class, "getLoader",
-							new Class[] { URL.class }, new Object[] { url },
-							Object.class);
+					Object loader = Util.invokeMethod(classPath, URLClassPath.class, "getLoader",
+							new Class[] { URL.class }, new Object[] { url }, Object.class);
 					if (jarLoaderClz.isInstance(loader)) {
-						URL[] urls = Util.invokeMethod(loader, jarLoaderClz,
-								"getClassPath", new Class[0], new Object[0],
-								URL[].class);
+						URL[] urls = Util.invokeMethod(loader, jarLoaderClz, "getClassPath", new Class[0],
+								new Object[0], URL[].class);
 						if (urls != null) {
 							foundedStack.push(url);
 							for (int i = urls.length - 1; i >= 0; i--) {
@@ -137,7 +144,7 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 	}
 
 	public String[] findDepedencies(String className) {
-		JavaClass theClass = parseJavaClass(locateClass(className));
+		Jclass theClass = parseJavaClass(locateClass(className));
 		if (theClass == null) {
 			return new String[0];
 		}
@@ -150,7 +157,7 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 	}
 
 	public String[] findNotFoundedDepedencies(String className) {
-		JavaClass theClass = parseJavaClass(locateClass(className));
+		Jclass theClass = parseJavaClass(locateClass(className));
 		if (theClass == null) {
 			return new String[0];
 		}
@@ -168,16 +175,15 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 			JarCat jarCat = null;
 			try {
 				jarCat = new JarCat(url.openStream());
-				find |= jarCat.match(new DefaultNameMatcher(finding,
-						new Scanner(new InputStream() {
+				find |= jarCat.match(new DefaultNameMatcher(finding, new Scanner(new InputStream() {
 
-							// always input Enter
-							@Override
-							public int read() throws IOException {
-								return '\n';
-							}
+					// always input Enter
+					@Override
+					public int read() throws IOException {
+						return '\n';
+					}
 
-						}), null), new DefaultMatchOutput(output, "::"));
+				}), null), new DefaultMatchOutput(output, "::"));
 			} catch (IOException e) {
 				throw new IllegalArgumentException("cannot process " + url, e);
 			} finally {
@@ -193,12 +199,11 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 	}
 
 	public String[] findReferencedBy(String refClassName, String packageName) {
-		Set<String> allClassNames = Util.listAllClassNames(this,
-				Util.createInPackage(packageName, false));
+		Set<String> allClassNames = Util.listAllClassNames(this, Util.createInPackage(packageName, false));
 		Set<String> foundedClass = new HashSet<String>();
 
 		for (String className : allClassNames) {
-			JavaClass javaClass = parseJavaClass(locateClass(className));
+			Jclass javaClass = parseJavaClass(locateClass(className));
 
 			if (javaClass == null) {
 				continue;
@@ -211,30 +216,21 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 		return foundedClass.toArray(new String[foundedClass.size()]);
 	}
 
-	public String[] findReferencedByMethod(String fullMethodName,
-			String packageName) {
-		Set<String> allClassNames = Util.listAllClassNames(this,
-				Util.createInPackage(packageName, false));
+	public String[] findReferencedByMethod(String fullMethodName, String packageName) {
+		Set<String> allClassNames = Util.listAllClassNames(this, Util.createInPackage(packageName, false));
 		Set<String> foundedClass = new HashSet<String>();
 		if (fullMethodName.lastIndexOf('.') < 0) {
-			throw new IllegalArgumentException("not full method name: "
-					+ fullMethodName);
+			throw new IllegalArgumentException("not full method name: " + fullMethodName);
 		}
-		String refClassName = fullMethodName.substring(0,
-				fullMethodName.lastIndexOf('.'));
 
 		for (String className : allClassNames) {
-			JavaClass javaClass = parseJavaClass(locateClass(className));
+			Jclass javaClass = parseJavaClass(locateClass(className));
 
 			if (javaClass == null) {
 				continue;
 			}
-			DependencyVisitor dependencyVisitor = getDependencyVisitor(javaClass);
-			if (dependencyVisitor.getDependencies().contains(refClassName)) {
-				if (dependencyVisitor.getDependencyMethods().contains(
-						fullMethodName)) {
-					foundedClass.add(javaClass.getClassName());
-				}
+			if (parserProvider.getDependencyMethods(javaClass).contains(fullMethodName)) {
+				foundedClass.add(javaClass.getClassName());
 			}
 		}
 		return foundedClass.toArray(new String[foundedClass.size()]);
@@ -244,19 +240,17 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 		return urlClassPath;
 	}
 
-	private void processDependency(String className, Set<String> foundedClass,
-			Set<String> notFoundedClass) {
+	private void processDependency(String className, Set<String> foundedClass, Set<String> notFoundedClass) {
 		Stack<String> processedClass = new Stack<String>();
 		processedClass.add(className);
 
 		while (!processedClass.isEmpty()) {
 			String name = processedClass.pop();
-			if (name == null || foundedClass.contains(name)
-					|| notFoundedClass.contains(name)) {
+			if (name == null || foundedClass.contains(name) || notFoundedClass.contains(name)) {
 				// founded or not founded
 				continue;
 			}
-			JavaClass javaClass = parseJavaClass(locateClass(name));
+			Jclass javaClass = parseJavaClass(locateClass(name));
 			if (javaClass == null) {
 				notFoundedClass.add(name);
 				continue;
@@ -266,42 +260,25 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 		}
 	}
 
-	private Set<String> getDependenciesFor(JavaClass javaClass) {
+	private Set<String> getDependenciesFor(Jclass javaClass) {
 		if (javaClass == null) {
 			throw new NullPointerException("java class is null");
 		}
-		DependencyVisitor dependencyVisitor = new DependencyVisitor();
-		DescendingVisitor traverser = new DescendingVisitor(javaClass,
-				dependencyVisitor);
-		traverser.visit();
-		return dependencyVisitor.getDependencies();
+		return parserProvider.getDependencies(javaClass);
 	}
 
-	private DependencyVisitor getDependencyVisitor(JavaClass javaClass) {
-		if (javaClass == null) {
-			throw new NullPointerException("java class is null");
-		}
-		DependencyVisitor dependencyVisitor = new DependencyVisitor();
-		DescendingVisitor traverser = new DescendingVisitor(javaClass,
-				dependencyVisitor);
-		traverser.visit();
-		return dependencyVisitor;
-	}
-
-	private boolean isAssignableFrom(String className,
-			Set<String> foundedClass, Set<String> processedClass) {
+	private boolean isAssignableFrom(String className, Set<String> foundedClass, Set<String> processedClass) {
 		if (processedClass.contains(className)) {
 			// has processed
 			return foundedClass.contains(className);
 		}
 		processedClass.add(className);
-		JavaClass javaClass = parseJavaClass(locateClass(className));
+		Jclass javaClass = parseJavaClass(locateClass(className));
 		if (javaClass == null) {
 			// not in the classpath
 			return false;
 		}
-		if (isAssignableFrom(javaClass.getSuperclassName(), foundedClass,
-				processedClass)) {
+		if (isAssignableFrom(javaClass.getSuperClassName(), foundedClass, processedClass)) {
 			foundedClass.add(className);
 			return true;
 		}
@@ -314,13 +291,13 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 		return false;
 	}
 
-	private static JavaClass parseJavaClass(URL url) {
+	private static Jclass parseJavaClass(URL url) {
 		if (url == null)
 			return null;
 		InputStream stream = null;
 		try {
 			stream = url.openStream();
-			return new ClassParser(stream, url.getFile()).parse();
+			return parserProvider.parse(stream, url.getFile());
 		} catch (ClassFormatError e) {
 			return null;
 		} catch (IOException ignored) {
@@ -330,17 +307,14 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 		}
 	}
 
-	public String[] findAssignableFrom(String topPackageName,
-			String parentClassName) {
-		JavaClass theClass = parseJavaClass(locateClass(parentClassName));
+	public String[] findAssignableFrom(String topPackageName, String parentClassName) {
+		Jclass theClass = parseJavaClass(locateClass(parentClassName));
 		if (theClass == null) {
 			return new String[0];
 		}
 
-		Set<String> allClassNames = Util.listAllClassNames(
-				this,
-				topPackageName == null ? Util.acceptAll(String.class) : Util
-						.createStartsWith(topPackageName));
+		Set<String> allClassNames = Util.listAllClassNames(this,
+				topPackageName == null ? Util.acceptAll(String.class) : Util.createStartsWith(topPackageName));
 
 		Set<String> foundedClass = new HashSet<String>();
 		foundedClass.add(theClass.getClassName());
@@ -354,29 +328,26 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 	}
 
 	public String[] findPackageClasses(String packageName, boolean directPackage) {
-		Set<String> allClassNames = Util.listAllClassNames(this,
-				Util.createInPackage(packageName, directPackage));
+		Set<String> allClassNames = Util.listAllClassNames(this, Util.createInPackage(packageName, directPackage));
 
 		return allClassNames.toArray(new String[allClassNames.size()]);
 	}
 
-	public String[] findSuperTypes(String topPackageName,
-			String subTypeClassName) {
-		return Util.filter(findSuperTypes(subTypeClassName),
-				Util.createInPackage(topPackageName, false));
+	public String[] findSuperTypes(String topPackageName, String subTypeClassName) {
+		return Util.filter(findSuperTypes(subTypeClassName), Util.createInPackage(topPackageName, false));
 	}
 
 	public String[] findSuperTypes(String subTypeClassName) {
-		JavaClass theClass = parseJavaClass(locateClass(subTypeClassName));
+		Jclass theClass = parseJavaClass(locateClass(subTypeClassName));
 		if (theClass == null) {
 			return new String[0];
 		}
 
 		List<String> list = new ArrayList<String>();
-		Stack<JavaClass> stack = new Stack<JavaClass>();
+		Stack<Jclass> stack = new Stack<Jclass>();
 		stack.push(theClass);
 		while (!stack.isEmpty()) {
-			JavaClass javaClass = stack.pop();
+			Jclass javaClass = stack.pop();
 			if (javaClass != null && !list.contains(javaClass.getClassName())) {
 				list.add(javaClass.getClassName());
 			} else {
@@ -385,33 +356,27 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 			for (String inf : javaClass.getInterfaceNames()) {
 				stack.push(parseJavaClass(locateClass(inf)));
 			}
-			if (javaClass.getSuperclassName() != null) {
-				stack.push(parseJavaClass(locateClass(javaClass
-						.getSuperclassName())));
+			if (javaClass.getSuperClassName() != null) {
+				stack.push(parseJavaClass(locateClass(javaClass.getSuperClassName())));
 			}
 		}
 		list.remove(theClass.getClassName());
 		return list.toArray(new String[list.size()]);
 	}
 
-	public Map<String, Set<String>> findConstants(String packageName,
-			String text) {
-		Set<String> allClassNames = Util.listAllClassNames(this,
-				Util.createInPackage(packageName, false));
+	public Map<String, Set<String>> findConstants(String packageName, String text) {
+		Set<String> allClassNames = Util.listAllClassNames(this, Util.createInPackage(packageName, false));
 
 		Map<String, Set<String>> ret = new TreeMap<String, Set<String>>();
 		for (String className : allClassNames) {
-			JavaClass javaClass = parseJavaClass(locateClass(className));
+			Jclass javaClass = parseJavaClass(locateClass(className));
 
 			if (javaClass == null) {
 				continue;
 			}
-			ConstantPoolVisitor visitor = new ConstantPoolVisitor(text);
-			DescendingVisitor traverser = new DescendingVisitor(javaClass,
-					visitor);
-			traverser.visit();
-			if (!visitor.getStrings().isEmpty()) {
-				ret.put(className, visitor.getStrings());
+			Set<String> strings = parserProvider.getStrings(javaClass, text);
+			if (!strings.isEmpty()) {
+				ret.put(className, strings);
 			}
 
 		}
