@@ -1,6 +1,8 @@
 Class Finder Tool Introduction
 ==============================
 
+[![Build Status](https://travis-ci.org/feng-zh/classfinder.svg)](https://travis-ci.org/feng-zh/classfinder)
+
 Java Class-Path tells Java where to look on the file system for files defining these classes. For generic java application, all class files are searched/loaded from the jar files, or class folders, based on these path item sequence. 
 
 Usually, the developer would like to find class in one or many jar files, like the following situation,
