@@ -70,4 +70,10 @@ public class AsmClassParserProvider implements ClassParserProvider {
 		return visitor;
 	}
 
+	@Override
+	public Set<String> getDependencyFields(Jclass jclass) {
+		AsmDependencyVisitor visitor = getVisitor(jclass, null);
+		return visitor.getDependencyFields();
+	}
+
 }

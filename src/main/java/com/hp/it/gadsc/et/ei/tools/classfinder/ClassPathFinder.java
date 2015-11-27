@@ -383,4 +383,24 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 		return ret;
 	}
 
+	public String[] findReferencedByField(String fullFieldName, String packageName) {
+		Set<String> allClassNames = Util.listAllClassNames(this, Util.createInPackage(packageName, false));
+		Set<String> foundedClass = new HashSet<String>();
+		if (fullFieldName.lastIndexOf('.') < 0) {
+			throw new IllegalArgumentException("not full field name: " + fullFieldName);
+		}
+
+		for (String className : allClassNames) {
+			Jclass javaClass = parseJavaClass(locateClass(className));
+
+			if (javaClass == null) {
+				continue;
+			}
+			if (parserProvider.getDependencyFields(javaClass).contains(fullFieldName)) {
+				foundedClass.add(javaClass.getClassName());
+			}
+		}
+		return foundedClass.toArray(new String[foundedClass.size()]);
+	}
+
 }

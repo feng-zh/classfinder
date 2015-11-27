@@ -45,4 +45,12 @@ public class BcelClassParserProvider implements ClassParserProvider {
 		return dependencyVisitor.getDependencyMethods();
 	}
 
+	@Override
+	public Set<String> getDependencyFields(Jclass jClass) {
+		DependencyVisitor dependencyVisitor = new DependencyVisitor();
+		DescendingVisitor traverser = new DescendingVisitor((JavaClass) jClass.getNativeObject(), dependencyVisitor);
+		traverser.visit();
+		return dependencyVisitor.getDependencyFields();
+	}
+
 }

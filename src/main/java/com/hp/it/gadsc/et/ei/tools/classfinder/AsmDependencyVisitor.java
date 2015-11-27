@@ -20,6 +20,8 @@ class AsmDependencyVisitor extends ClassVisitor {
 
 	private Set<String> methods = new HashSet<String>();
 
+	private Set<String> fields = new HashSet<String>();
+
 	private ClassReader reader;
 
 	final String textToFind;
@@ -89,7 +91,7 @@ class AsmDependencyVisitor extends ClassVisitor {
 
 	@Override
 	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-		addType(Type.getType(desc));
+		addFieldType(null, name, Type.getType(desc));
 		return null;
 	}
 
@@ -149,12 +151,23 @@ class AsmDependencyVisitor extends ClassVisitor {
 				if (constType == CONST_METH || constType == CONST_IMETH) {
 					addMethodType(Type.getObjectType(fmType), fmName, Type.getMethodType(fmDesc));
 				}
+				if (constType == CONST_FIELD) {
+					addFieldType(Type.getObjectType(fmType), fmName, Type.getObjectType(fmDesc));
+				}
 				break;
 			default:
 				// System.out.println("Unknown: " + constType);
 			}
 		}
 
+	}
+
+	private void addFieldType(Type ownerType, String fmName, Type fieldType) {
+		addType(fieldType);
+		if (ownerType != null) {
+			addType(ownerType);
+			fields.add(ownerType.getClassName() + "." + fmName);
+		}
 	}
 
 	private void addString(String str) {
@@ -187,6 +200,13 @@ class AsmDependencyVisitor extends ClassVisitor {
 		for (String s : visitor.getDependencyMethods()) {
 			System.out.println(s);
 		}
+		for (String s : visitor.getDependencyFields()) {
+			System.out.println(s);
+		}
+	}
+
+	public Set<String> getDependencyFields() {
+		return fields;
 	}
 
 }

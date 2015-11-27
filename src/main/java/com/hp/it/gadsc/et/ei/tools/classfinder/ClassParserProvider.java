@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 
+import com.hp.it.gadsc.et.ei.tools.classfinder.ClassParserProvider.Jclass;
+
 public interface ClassParserProvider {
 
 	public static class Jclass {
@@ -52,10 +54,12 @@ public interface ClassParserProvider {
 
 	public Jclass parse(InputStream stream, String file) throws IOException;
 
-	public Set<String> getDependencies(Jclass javaClass);
+	public Set<String> getDependencies(Jclass jClass);
 
-	public Set<String> getStrings(Jclass javaClass, String text);
+	public Set<String> getStrings(Jclass jClass, String text);
 
-	public Set<String> getDependencyMethods(Jclass javaClass);
+	public Set<String> getDependencyMethods(Jclass jClass);
+
+	public Set<String> getDependencyFields(Jclass jClass);
 
 }

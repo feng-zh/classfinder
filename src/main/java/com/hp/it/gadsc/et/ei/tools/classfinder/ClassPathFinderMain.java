@@ -71,6 +71,8 @@ public class ClassPathFinderMain {
 				action = 12;// find conflict classes by source
 			} else if (arg.equals("-conflictset")) {
 				action = 13;// find conflict classes by source
+			} else if (arg.equals("-fref")) {
+				action = 14;// find referring field
 			} else if (arg.equals("-verbose")) {
 				verbose = true;
 			} else if (arg.equals("-current")) {
@@ -390,7 +392,7 @@ public class ClassPathFinderMain {
 							System.out.println(className);
 						}
 					} else {
-						System.err.println("-- No reference class found for ["
+						System.err.println("-- No reference class found for Method ["
 								+ name + "]");
 					}
 				} else if (action == 10) {
@@ -485,7 +487,21 @@ public class ClassPathFinderMain {
 							}
 						}
 					}
-				}
+				} else if (action == 14) {
+					String[] classNames = finder.findReferencedByField(name,
+							null);
+					Arrays.sort(classNames);
+					if (classNames.length > 0) {
+						System.out.println("-- Reference class for Field ["
+								+ name + "]");
+						for (String className : classNames) {
+							System.out.println(className);
+						}
+					} else {
+						System.err.println("-- No reference class found for Field ["
+								+ name + "]");
+					}
+				} 
 			}
 		}
 	}
@@ -503,7 +519,7 @@ public class ClassPathFinderMain {
 		out.println("  -classpath <PATH LIST> [-jre <JAVA HOME>]");
 		out.println("\t\tLookup class from the provided class path");
 		out.println("  (EMPTY)");
-		out.println("\t\tFind class from the class path loaded from std in. It accept path seperator or new line seperator");
+		out.println("\t\tFind class from the class path loaded from std in. It accept path separator or new line separator");
 		out.println();
 		out.println("OPTION:");
 		out.println("  (EMPTY)");
@@ -519,7 +535,7 @@ public class ClassPathFinderMain {
 		out.println("  -duplicate ");
 		out.println("\t\tList all dupliated class or interface names");
 		out.println("  -duplicateset ");
-		out.println("\t\tList set of all dupliated class or interface names per source");
+		out.println("\t\tList set of all duplicated class or interface names per source");
 		out.println("  -conflict ");
 		out.println("\t\tList all conflict class or interface names");
 		out.println("  -conflictset ");
@@ -528,6 +544,8 @@ public class ClassPathFinderMain {
 		out.println("\t\tList all incoming referring class or interface names");
 		out.println("  -mref ");
 		out.println("\t\tList all incoming referring class or interface names for the full method name");
+		out.println("  -fref ");
+		out.println("\t\tList all incoming referring class or interface names for the full field name");
 		out.println("  -depend ");
 		out.println("\t\tList all outgoing depending class or interface names");
 		out.println("  -strings ");
@@ -537,7 +555,7 @@ public class ClassPathFinderMain {
 		out.println("  -verbose ");
 		out.println("\t\tList class path will be searched");
 		out.println("  -current ");
-		out.println("\t\tAdd current java home into classpath if no explict java home specified");
+		out.println("\t\tAdd current java home into classpath if no explicit java home specified");
 		out.println();
 		out.println("NAME:");
 		out.println("  java.lang.Object\tThe full class name");

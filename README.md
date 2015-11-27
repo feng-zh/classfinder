@@ -11,6 +11,7 @@ Usually, the developer would like to find class in one or many jar files, like t
 - List all duplicated class names to eliminate incorrect class loading issue;
 - Find class full name based on specified Simple class name or name with wild card character;
 - List some class with specified constant string; 
+- List classes that using other class, method or field;
 
 The `classfinder` library/tool is helping Java developer to find class easily inside or outside JVM without source code provided. This manual is mainly to introduce the core function for this tool running as standalone application from command line. 
 
@@ -181,6 +182,17 @@ To get reference of the specified method in the class, use `-mref` parameter and
     ... 
 
 
+#### List Incoming Referring Classes for Field (Access List) 
+
+To get reference of the specified field in the class, use `-fref` parameter and full field with class name can provide related class name list. 
+
+    C:\>dir /b *.jar | java -jar classfinder.jar -fref java.lang.System.out 
+    -- Reference class for Field [java.lang.System.out] 
+    com.hp.it.gadsc.et.ei.tools.classfinder.ClassPathFinderMain 
+    com.hp.it.gadsc.et.ei.tools.classfinder.JarCat 
+    ... 
+
+
 ### Other Usage 
 
 #### List Class containing String Text 
@@ -230,7 +242,7 @@ Here are the full usage for reference. Type `java -jar classfinder.jar` or incor
     -classpath <PATH LIST> [-jre <JAVA HOME>] 
     Lookup class from the provided class path 
     (EMPTY) 
-    Find class from the class path loaded from std in. It accept path seperator or new line seperator 
+    Find class from the class path loaded from std in. It accept path separator or new line separator 
     
     OPTION: 
     (EMPTY) 
@@ -244,11 +256,13 @@ Here are the full usage for reference. Type `java -jar classfinder.jar` or incor
     -sub 
     List all children class or interface names 
     -duplicate 
-    List all dupliated class or interface names 
+    List all duplicated class or interface names 
     -ref 
     List all incoming referring class or interface names 
     -mref 
     List all incoming referring class or interface names for the full method name 
+    -fref 
+    List all incoming referring class or interface names for the full field name 
     -depend 
     List all outgoing depending class or interface names 
     -strings 
@@ -258,7 +272,7 @@ Here are the full usage for reference. Type `java -jar classfinder.jar` or incor
     -verbose 
     List class path will be searched 
     -current 
-    Add current java home into classpath if no explict java home specified 
+    Add current java home into classpath if no explicit java home specified 
     
     NAME: 
     java.lang.Object The full class name 
@@ -266,4 +280,4 @@ Here are the full usage for reference. Type `java -jar classfinder.jar` or incor
     This is only support for class name finding. 
     'java.util.*List' The full class name with wildcards(like '*', or '?'). This is only support for class name finding. 
     'java.util.Collection.toArray' The full method name. This is only support for method name based finding. 
- 
+    'java.lang.System.out' The full field name. This is only support for field name based finding. 

@@ -10,6 +10,7 @@ import com.sun.org.apache.bcel.internal.Constants;
 import com.sun.org.apache.bcel.internal.classfile.Attribute;
 import com.sun.org.apache.bcel.internal.classfile.ConstantCP;
 import com.sun.org.apache.bcel.internal.classfile.ConstantClass;
+import com.sun.org.apache.bcel.internal.classfile.ConstantFieldref;
 import com.sun.org.apache.bcel.internal.classfile.ConstantInterfaceMethodref;
 import com.sun.org.apache.bcel.internal.classfile.ConstantMethodref;
 import com.sun.org.apache.bcel.internal.classfile.ConstantNameAndType;
@@ -28,6 +29,8 @@ class DependencyVisitor extends EmptyVisitor {
 	private final Set<String> dependencies;
 
 	private final Set<String> dependencyMethods;
+	
+	private final Set<String> dependencyFields;
 
 	private static Pattern objectArrayPatten = Pattern.compile("^\\[+L(.*);");
 
@@ -37,6 +40,7 @@ class DependencyVisitor extends EmptyVisitor {
 	public DependencyVisitor() {
 		dependencies = new HashSet<String>();
 		dependencyMethods = new HashSet<String>();
+		dependencyFields = new HashSet<String>();
 	}
 
 	private void addClass(String classname) {
@@ -77,6 +81,10 @@ class DependencyVisitor extends EmptyVisitor {
 
 	public Set<String> getDependencyMethods() {
 		return dependencyMethods;
+	}
+	
+	public Set<String> getDependencyFields() {
+		return dependencyFields;
 	}
 
 	public void visitConstantClass(ConstantClass constantClass) {
@@ -145,6 +153,23 @@ class DependencyVisitor extends EmptyVisitor {
 
 	public void visitConstantMethodref(ConstantMethodref obj) {
 		addMethod(obj);
+	}
+	
+	@Override
+	public void visitConstantFieldref(ConstantFieldref obj) {
+		addField(obj);
+	}
+
+	private void addField(ConstantFieldref obj) {
+		ConstantNameAndType constNameType = (ConstantNameAndType) constantPool
+				.getConstant(obj.getNameAndTypeIndex(),
+						Constants.CONSTANT_NameAndType);
+		String name = constantPool.constantToString(obj.getClassIndex(),
+				Constants.CONSTANT_Class)
+				+ "."
+				+ constantPool.constantToString(constNameType.getNameIndex(),
+						Constants.CONSTANT_Utf8);
+		dependencyFields.add(name);		
 	}
 
 	private void addMethod(ConstantCP obj) {
