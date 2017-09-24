@@ -14,7 +14,7 @@ class Jps implements Closeable {
 
 	private Callable<Properties> vmAdapter;
 
-	private Properties allProperites;
+	private Properties allProperties;
 
 	public Jps(int pid) throws IOException {
 		vmAdapter = createVMAdapter(pid);
@@ -25,7 +25,7 @@ class Jps implements Closeable {
 	}
 
 	public int getProcessId() {
-		return Integer.parseInt(getAllProperites().getProperty(
+		return Integer.parseInt(getAllProperties().getProperty(
 				"classfinder.pid"));
 	}
 
@@ -38,7 +38,7 @@ class Jps implements Closeable {
 				try {
 					return (Callable<Properties>) Util.newInstance(clz,
 							new Class[] { Integer.TYPE },
-							new Object[] { new Integer(pid) });
+							new Object[] { Integer.valueOf(pid) });
 				} catch (InvocationTargetException e) {
 					throw e.getCause();
 				}
@@ -98,7 +98,7 @@ class Jps implements Closeable {
 
 	public URL[] getBootClassPath() {
 		return Util.parsePath(
-				getAllProperites().getProperty(
+				getAllProperties().getProperty(
 						"sun.property.sun.boot.class.path"), false,
 				getSystemProperty("user.dir"));
 	}
@@ -123,23 +123,18 @@ class Jps implements Closeable {
 	}
 
 	public String getSystemProperty(String propName) {
-		return getAllProperites().getProperty("java.property." + propName);
+		return getAllProperties().getProperty("java.property." + propName);
 	}
 
-	public Properties getAllProperites() {
-		if (allProperites == null) {
+	public Properties getAllProperties() {
+		if (allProperties == null) {
 			try {
-				allProperites = vmAdapter.call();
+				allProperties = vmAdapter.call();
 			} catch (Exception e) {
 				return new Properties();
 			}
 		}
-		return allProperites;
-	}
-
-	protected void finalize() throws Throwable {
-		close();
-		super.finalize();
+		return allProperties;
 	}
 
 	public void close() {

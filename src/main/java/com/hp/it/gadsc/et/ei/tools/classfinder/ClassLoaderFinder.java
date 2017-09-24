@@ -78,7 +78,7 @@ public class ClassLoaderFinder extends AbstractClassFinder implements
 		if (clz == null) {
 			throw new IllegalArgumentException("null class");
 		}
-		ProtectionDomain protectionDomain = null;
+		ProtectionDomain protectionDomain;
 		try {
 			protectionDomain = clz.getProtectionDomain();
 		} catch (SecurityException e) {

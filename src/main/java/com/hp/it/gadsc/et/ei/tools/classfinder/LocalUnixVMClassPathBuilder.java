@@ -10,15 +10,19 @@ public class LocalUnixVMClassPathBuilder extends SystemClassPathBuilder
 
 	public LocalUnixVMClassPathBuilder(String stringInLine)
 			throws IllegalArgumentException {
-		Jps jps;
+		Jps jps = null;
 		try {
 			jps = new Jps(stringInLine);
+			initFromJps(jps);
 		} catch (IOException e) {
 			// cannot attach process
 			throw new IllegalArgumentException(
 					"cannot attache process with string: " + stringInLine, e);
+		} finally {
+			if (jps != null) {
+				jps.close();
+			}
 		}
-		initFromJps(jps);
 	}
 
 	public LocalUnixVMClassPathBuilder(int pid) throws IllegalArgumentException {
@@ -43,8 +47,6 @@ public class LocalUnixVMClassPathBuilder extends SystemClassPathBuilder
 		}
 		useJavaHome(true);
 		setJavaHome(jps.getJavaHome());
-		jps.close();
-		jps = null;
 	}
 
 	@Override

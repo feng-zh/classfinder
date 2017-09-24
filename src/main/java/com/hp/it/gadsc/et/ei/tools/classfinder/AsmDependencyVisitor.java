@@ -14,7 +14,7 @@ import jdk.internal.org.objectweb.asm.Type;
 @SuppressWarnings("restriction")
 class AsmDependencyVisitor extends ClassVisitor {
 
-	private Set<Type> depenencies = new HashSet<Type>();
+	private Set<Type> dependencies = new HashSet<Type>();
 
 	private Set<String> strings = new HashSet<String>();
 
@@ -51,8 +51,8 @@ class AsmDependencyVisitor extends ClassVisitor {
 	}
 
 	public Set<String> getDependencies() {
-		Set<String> ret = new HashSet<String>(depenencies.size());
-		for (Type type : depenencies) {
+		Set<String> ret = new HashSet<String>(dependencies.size());
+		for (Type type : dependencies) {
 			if (type.getSort() == Type.ARRAY) {
 				ret.add(type.getElementType().getClassName());
 			} else {
@@ -86,7 +86,7 @@ class AsmDependencyVisitor extends ClassVisitor {
 		if (type == null) {
 			throw new IllegalArgumentException("null type");
 		}
-		depenencies.add(type);
+		dependencies.add(type);
 	}
 
 	@Override
