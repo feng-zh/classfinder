@@ -1,21 +1,11 @@
 package com.hp.it.gadsc.et.ei.tools.classfinder;
 
+import com.hp.it.gadsc.et.ei.tools.classfinder.Util.SelectFilter;
+
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
-import java.util.Vector;
-
-import sun.misc.Launcher;
-import sun.misc.Resource;
-
-import com.hp.it.gadsc.et.ei.tools.classfinder.Util.SelectFilter;
+import java.util.*;
 
 @SuppressWarnings("restriction")
 public class ClassLoaderFinder extends AbstractClassFinder implements
@@ -111,70 +101,13 @@ public class ClassLoaderFinder extends AbstractClassFinder implements
 			boolean errorIfNotFound) throws NullPointerException {
 		try {
 			return getClassLoader().loadClass(className).getClassLoader();
-		} catch (ClassNotFoundException e) {
-			if (errorIfNotFound) {
-				throw new NullPointerException(e.toString());
-			} else {
-				return null;
-			}
-		} catch (NoClassDefFoundError e) {
+		} catch (ClassNotFoundException | NoClassDefFoundError e) {
 			if (errorIfNotFound) {
 				throw new NullPointerException(e.toString());
 			} else {
 				return null;
 			}
 		}
-	}
-
-	public ClassLoader[] findClassLoaders(String className) {
-		List<ClassLoader> list = new ArrayList<ClassLoader>();
-		try {
-			ClassLoader cl = getClassLoader();
-			while (cl != null) {
-				Vector<?> loadedClasses = Util.getField(cl, ClassLoader.class,
-						"classes", Vector.class);
-				boolean founded = false;
-				for (Object object : loadedClasses) {
-					Class<?> clz = (Class<?>) object;
-					if (clz.getName().equals(className)) {
-						list.add(clz.getClassLoader());
-						founded = true;
-						break;
-					}
-				}
-				if (!founded) {
-					Class<?> clz;
-					try {
-						clz = Util.invokeMethod(cl, ClassLoader.class,
-								"findClass", new Class[] { String.class },
-								new Object[] { className }, Class.class);
-						list.add(clz.getClassLoader());
-					} catch (InvocationTargetException e) {
-						if (!(e.getCause() instanceof ClassNotFoundException)) {
-							// ignore class not found
-							if (e.getCause() instanceof SecurityException) {
-								if (reportErrorNoPermission) {
-									throw (SecurityException) e.getCause();
-								}
-							}
-						}
-					}
-				}
-				cl = cl.getParent();
-			}
-			// check bootstrap classes
-			Resource resource = Launcher.getBootstrapClassPath().getResource(
-					Util.resolveName(className));
-			if (resource != null) {
-				// bootstrap classloader in first
-				list.add(0, null);
-			}
-		} catch (RuntimeException e) {
-			if (reportErrorNoPermission) {
-				throw e;
-			}
-		}
-		return list.toArray(new ClassLoader[list.size()]);
 	}
 
 	public URL locateResource(String resourceName) {
@@ -206,34 +139,6 @@ public class ClassLoaderFinder extends AbstractClassFinder implements
 		SystemClassPathBuilder builder = new SystemClassPathBuilder(true);
 		ClassPathFinder pathFinder = new ClassPathFinder(builder);
 		return pathFinder;
-	}
-
-	public boolean isClassLoaded(String className) {
-		try {
-			ClassLoader cl = getClassLoader();
-			while (cl != null) {
-				// get loaded classes
-				Vector<?> loadedClasses = Util.getField(cl, ClassLoader.class,
-						"classes", Vector.class);
-				for (Object object : loadedClasses) {
-					Class<?> clz = (Class<?>) object;
-					if (clz.getName().equals(className)) {
-						return true;
-					}
-				}
-				cl = cl.getParent();
-			}
-			// check bootstrap classes
-			Resource resource = Launcher.getBootstrapClassPath().getResource(
-					Util.resolveName(className));
-			return resource != null;
-		} catch (RuntimeException e) {
-			if (reportErrorNoPermission) {
-				throw e;
-			} else {
-				return false;
-			}
-		}
 	}
 
 	private ClassLoader getClassLoader() {

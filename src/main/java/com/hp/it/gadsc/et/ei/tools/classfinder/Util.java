@@ -1,81 +1,50 @@
 package com.hp.it.gadsc.et.ei.tools.classfinder;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 final class Util {
 
-	private static final String CLASS_SUFIX = ".class";
+	private static final String CLASS_SUFFIX = ".class";
 
 	private static final File[] EMPTY_FILES = new File[0];
 
 	private static ClassLoader dummyLoader;
 
-	private static class SufixFilter implements FilenameFilter {
+	private static class SuffixFilter implements FilenameFilter {
 
-		private final String sufix;
+		private final String suffix;
 
-		private boolean casesensitive;
+		private boolean caseSensitive;
 
-		public SufixFilter(String sufix, boolean casesensitive) {
-			this.casesensitive = casesensitive;
-			this.sufix = casesensitive ? sufix : sufix.toLowerCase();
+		public SuffixFilter(String suffix, boolean caseSensitive) {
+			this.caseSensitive = caseSensitive;
+			this.suffix = caseSensitive ? suffix : suffix.toLowerCase();
 		}
 
 		public boolean accept(File dir, String name) {
-			name = casesensitive ? name : name.toLowerCase();
-			if (name.endsWith(sufix)) {
-				return true;
-			} else {
-				return false;
-			}
+			name = caseSensitive ? name : name.toLowerCase();
+			return name.endsWith(suffix);
 		}
 	}
 
-	private static FileFilter subFolderFilter = new FileFilter() {
+	private static FileFilter subFolderFilter = File::isDirectory;
 
-		public boolean accept(File pathname) {
-			return pathname.isDirectory();
-		}
-	};
+	private static FilenameFilter jarFilter = new SuffixFilter(".jar", true);
 
-	private static FilenameFilter jarFilter = new SufixFilter(".jar", true);
+	private static FilenameFilter classFileFilter = new SuffixFilter(CLASS_SUFFIX, false);
 
-	private static FilenameFilter classFileFilter = new SufixFilter(
-			CLASS_SUFIX, false);
-
-	public static interface SelectFilter<T> {
-		public boolean accept(T name);
+	public interface SelectFilter<T> {
+		boolean accept(T name);
 	}
 
-	private static SelectFilter<?> ACCEPT_ALL = new SelectFilter<Object>() {
-		public boolean accept(Object name) {
-			return true;
-		}
-	};
+	private static SelectFilter<?> ACCEPT_ALL = (SelectFilter<Object>) name -> true;
 	
 	public static class ClassFileAttribute implements Serializable {
 		private static final long serialVersionUID = 1465344870523345849L;
@@ -99,7 +68,7 @@ final class Util {
 			// use signature if exists
 			if (c1.signature!=0 && c2.signature!=0) {
 				// if signature exists
-				return (c1.signature<c2.signature ? -1 : (c1.signature==c2.signature ? 0 : 1));
+				return Long.compare(c1.signature, c2.signature);
 			}
 			// TODO USE last modified?
 			return 0;
@@ -112,7 +81,7 @@ final class Util {
 	private Util() {
 	}
 
-	static URL extractJarURL(URL fullURL) {
+	private static URL extractJarURL(URL fullURL) {
 		if (isJarUrl(fullURL)) {
 			String fullString = fullURL.getFile();
 			if (fullString != null && fullString.endsWith("!/")) {
@@ -150,12 +119,12 @@ final class Util {
 	}
 
 	static String resolveName(String className) {
-		return className.replace('.', '/') + CLASS_SUFIX;
+		return className.replace('.', '/') + CLASS_SUFFIX;
 	}
 
-	static String unResolveName(String classFileName) {
+	private static String unResolveName(String classFileName) {
 		return classFileName.substring(0,
-				classFileName.length() - CLASS_SUFIX.length())
+				classFileName.length() - CLASS_SUFFIX.length())
 				.replace('/', '.');
 	}
 
@@ -184,7 +153,7 @@ final class Util {
 	}
 
 	static File[] listJarFiles(File folder, boolean recursive) {
-		List<File> container = new ArrayList<File>();
+		List<File> container = new ArrayList<>();
 		listFilesBy(folder, jarFilter, container, recursive);
 		if (container.isEmpty()) {
 			return EMPTY_FILES;
@@ -193,8 +162,8 @@ final class Util {
 		}
 	}
 
-	static String[] listClassFileNames(File folder, boolean recursive) {
-		List<String> container = new ArrayList<String>();
+	private static String[] listClassFileNames(File folder, boolean recursive) {
+		List<String> container = new ArrayList<>();
 		listNamesBy(folder, classFileFilter, null, container, recursive);
 		if (container.isEmpty()) {
 			return new String[0];
@@ -279,7 +248,7 @@ final class Util {
 	static URL[] parsePath(String path, boolean expand, String baseDir) {
 		if (path != null) {
 			String[] paths = path.split(File.pathSeparator);
-			List<URL> urls = new ArrayList<URL>();
+			List<URL> urls = new ArrayList<>();
 			for (String p : paths) {
 				try {
 					File file = new File(p);
@@ -304,60 +273,6 @@ final class Util {
 		}
 	}
 
-	static <T> T getField(Object obj, Class<?> declaredClass, String fieldName,
-			Class<T> clz) throws RuntimeException {
-		Field field;
-		try {
-			field = declaredClass.getDeclaredField(fieldName);
-		} catch (NoSuchFieldException e) {
-			throw new IllegalArgumentException("field name [" + fieldName
-					+ "]  cannot be found for class: " + declaredClass);
-		}
-		field.setAccessible(true);
-		try {
-			return clz.cast(field.get(obj));
-		} catch (IllegalAccessException e) {
-			throw new SecurityException(e);
-		}
-	}
-
-	static <T> T invokeMethod(Object obj, Class<?> declaredClass,
-			String methodName, Class<?>[] paraTypes, Object[] args, Class<T> clz)
-			throws RuntimeException, InvocationTargetException {
-		Method method;
-		try {
-			method = declaredClass.getDeclaredMethod(methodName, paraTypes);
-		} catch (NoSuchMethodException e) {
-			throw new IllegalArgumentException("method name [" + methodName
-					+ "]  cannot be found for class: " + declaredClass);
-		}
-		method.setAccessible(true);
-		try {
-			return clz.cast(method.invoke(obj, args));
-		} catch (IllegalAccessException e) {
-			throw new SecurityException(e);
-		}
-	}
-
-	static Object newInstance(Class<?> declaredClass, Class<?>[] paraTypes,
-			Object[] args) throws RuntimeException, InvocationTargetException {
-		Constructor<?> constructor;
-		try {
-			constructor = declaredClass.getConstructor(paraTypes);
-		} catch (NoSuchMethodException e) {
-			throw new IllegalArgumentException(
-					"constructure cannot be found for class: " + declaredClass);
-		}
-		constructor.setAccessible(true);
-		try {
-			return declaredClass.cast(constructor.newInstance(args));
-		} catch (IllegalAccessException e) {
-			throw new SecurityException(e);
-		} catch (InstantiationException e) {
-			throw new SecurityException(e);
-		}
-	}
-
 	static Set<String> listAllClassNames(ClassFinder finder,
 			SelectFilter<String> filter) {
 		return locateAllClassNames(finder, filter).keySet();
@@ -365,14 +280,14 @@ final class Util {
 
 	static Map<String, List<URL>> locateAllClassNames(ClassFinder finder,
 			SelectFilter<String> filter) {
-		List<URL> list = new ArrayList<URL>();
+		List<URL> list = new ArrayList<>();
 		for (URL url : finder.findResources("")) {
 			list.add(url);
 		}
 		for (URL url : finder.findResources(JarFile.MANIFEST_NAME)) {
 			list.add(url);
 		}
-		Map<String, List<URL>> allClassNames = new HashMap<String, List<URL>>();
+		Map<String, List<URL>> allClassNames = new HashMap<>();
 		getAllClassNames(allClassNames, list, filter);
 		return allClassNames;
 	}
@@ -394,7 +309,7 @@ final class Util {
 					while (entries.hasMoreElements()) {
 						JarEntry entry = entries.nextElement();
 						if (!entry.isDirectory()
-								&& entry.getName().endsWith(CLASS_SUFIX)) {
+								&& entry.getName().endsWith(CLASS_SUFFIX)) {
 							// class file entry
 							String className = unResolveName(entry.getName());
 							if (filter.accept(className)) {
@@ -449,32 +364,17 @@ final class Util {
 
 	private static void getAllClassNames(Map<String, List<URL>> allClassNames,
 			List<URL> resources, SelectFilter<String> filter) {
-		Map<String, Map<URL, ClassFileAttribute>> container = new HashMap<String, Map<URL, ClassFileAttribute>>();
+		Map<String, Map<URL, ClassFileAttribute>> container = new HashMap<>();
 		getAllClassNames(container, resources, filter, false);
-		for (Map.Entry<String, Map<URL, ClassFileAttribute>> entry : container
-				.entrySet()) {
-			allClassNames.put(entry.getKey(), new ArrayList<URL>(entry
-					.getValue().keySet()));
+		for (Map.Entry<String, Map<URL, ClassFileAttribute>> entry : container.entrySet()) {
+			allClassNames.put(entry.getKey(), new ArrayList<>(entry.getValue().keySet()));
 		}
 	}
 
 	private static void addIntoMap(Map<String, Map<URL, ClassFileAttribute>> map,
 			String className, URL url, ClassFileAttribute classFileAttr) {
-		Map<URL, ClassFileAttribute> list = map.get(className);
-		if (list == null) {
-			list = new LinkedHashMap<URL, ClassFileAttribute>();
-			map.put(className, list);
-		}
+		Map<URL, ClassFileAttribute> list = map.computeIfAbsent(className, k -> new LinkedHashMap<>());
 		list.put(url, classFileAttr);
-	}
-
-	static void close(Closeable closeable) {
-		if (closeable != null) {
-			try {
-				closeable.close();
-			} catch (IOException ignored) {
-			}
-		}
 	}
 
 	static boolean isJarUrl(URL url) {
@@ -488,34 +388,34 @@ final class Util {
 
 	static Map<String, List<URL>> locateAllClassNamesByPattern(
 			ClassFinder finder, SelectFilter<String> filter) {
-		List<URL> list = new ArrayList<URL>();
+		List<URL> list = new ArrayList<>();
 		for (URL url : finder.findResources("")) {
 			list.add(url);
 		}
 		for (URL url : finder.findResources(JarFile.MANIFEST_NAME)) {
 			list.add(url);
 		}
-		Map<String, List<URL>> allClassNames = new TreeMap<String, List<URL>>();
+		Map<String, List<URL>> allClassNames = new TreeMap<>();
 		getAllClassNames(allClassNames, list, filter);
 		return allClassNames;
 	}
 	
 	static Map<String, Map<URL, Long>> locateAllVersionedClassNamesByPattern(
 			ClassFinder finder, SelectFilter<String> filter) {
-		List<URL> list = new ArrayList<URL>();
+		List<URL> list = new ArrayList<>();
 		for (URL url : finder.findResources("")) {
 			list.add(url);
 		}
 		for (URL url : finder.findResources(JarFile.MANIFEST_NAME)) {
 			list.add(url);
 		}
-		Map<String, Map<URL, ClassFileAttribute>> container = new HashMap<String, Map<URL, ClassFileAttribute>>();
+		Map<String, Map<URL, ClassFileAttribute>> container = new HashMap<>();
 		getAllClassNames(container, list, filter, true);
-		Map<String, Map<URL, Long>> allClassNames = new TreeMap<String, Map<URL, Long>>();
+		Map<String, Map<URL, Long>> allClassNames = new TreeMap<>();
 		for (Map.Entry<String, Map<URL, ClassFileAttribute>> entry : container
 				.entrySet()) {
-			Map<URL, Long> versions = new LinkedHashMap<URL, Long>();
-			Map<ClassFileAttribute, Long> verSet = new TreeMap<ClassFileAttribute, Long>(
+			Map<URL, Long> versions = new LinkedHashMap<>();
+			Map<ClassFileAttribute, Long> verSet = new TreeMap<>(
 					ClassFileAttributeComparator);
 			for (Map.Entry<URL, ClassFileAttribute> urlEntry : entry.getValue()
 					.entrySet()) {
@@ -529,13 +429,7 @@ final class Util {
 	}
 
 	static SelectFilter<String> createStartsWith(final String string) {
-		return new SelectFilter<String>() {
-
-			public boolean accept(String name) {
-				return name.startsWith(string);
-			}
-
-		};
+		return name -> name.startsWith(string);
 	}
 
 	static SelectFilter<String> createNamePatternFilter(
@@ -594,46 +488,35 @@ final class Util {
 		return (SelectFilter<T>) ACCEPT_ALL;
 	}
 
-	@SuppressWarnings("rawtypes")
 	static SelectFilter<Class> createAssignableFrom(final Class<?> parentClass) {
-		return new SelectFilter<Class>() {
-			public boolean accept(Class clz) {
-				return parentClass.isAssignableFrom(clz);
-			}
-		};
+		return parentClass::isAssignableFrom;
 	}
 
 	static SelectFilter<String> createInPackage(final String packageName,
 			final boolean directPackage) {
-		return new SelectFilter<String>() {
-
-			public boolean accept(String name) {
-				if (packageName == null) {
-					// only class name without package if direct package
-					return directPackage ? name.indexOf('.') < 0 : true;
-				} else {
-					if (name.startsWith(packageName + ".")) {
-						return directPackage ? name.indexOf('.',
-								packageName.length() + 1) < 0 : true;
-					} else {
-						return false;
-					}
-				}
-			}
-
-		};
+		return name -> {
+            if (packageName == null) {
+                // only class name without package if direct package
+                return !directPackage || name.indexOf('.') < 0;
+            } else {
+                if (name.startsWith(packageName + ".")) {
+                    return !directPackage || (name.indexOf('.', packageName.length() + 1) < 0);
+                } else {
+                    return false;
+                }
+            }
+        };
 	}
 
 	@SuppressWarnings("unchecked")
 	static <T> T[] filter(T[] array, SelectFilter<T> filter) {
-		List<T> list = new ArrayList<T>();
+		List<T> list = new ArrayList<>();
 		for (T t : array) {
 			if (filter.accept(t)) {
 				list.add(t);
 			}
 		}
-		return (T[]) list.toArray((T[]) Array.newInstance(array.getClass()
-				.getComponentType(), 0));
+		return (T[]) list.toArray((T[]) Array.newInstance(array.getClass().getComponentType(), 0));
 	}
 
 	static String toAbsolutePath(URL url, String name) {

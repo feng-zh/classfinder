@@ -30,17 +30,11 @@ public class ClassPathFinderMain {
 	public static void main(String[] args) {
 		ClassPathBuilder builder = null;
 		int action = 0;
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		for (AtomicInteger i = new AtomicInteger(0); i.get() < args.length; i
 				.incrementAndGet()) {
 			String arg = args[i.get()];
-			if (arg.equals("-pid")) {
-				String pid = mandatory(args, i, "-pid");
-				builder = buildCpById(pid);
-			} else if (arg.equals("-cmd")) {
-				String cmd = mandatory(args, i, "-cmd");
-				builder = buildCpByCmd(cmd);
-			} else if (arg.equals("-classpath")) {
+			if (arg.equals("-classpath")) {
 				String cp = mandatory(args, i, "-classpath");
 				String[] classPaths = cp.split(File.pathSeparator);
 				String javaHome = optional(args, i, "-jre");
@@ -154,34 +148,6 @@ public class ClassPathFinderMain {
 		return list.toArray(new String[list.size()]);
 	}
 
-	private static boolean isWindows() {
-		return File.pathSeparatorChar == ';';
-	}
-
-	private static ClassPathBuilder buildCpById(String pid) {
-		try {
-			int id = Integer.parseInt(pid);
-			ClassPathBuilder builder = isWindows() ? new LocalVMClassPathBuilder(
-					id) : new LocalUnixVMClassPathBuilder(id);
-			return builder;
-		} catch (Exception e) {
-			throw new IllegalArgumentException("Cannot attach to process id ["
-					+ pid + "] with error: " + e.getMessage(), e);
-		}
-	}
-
-	private static ClassPathBuilder buildCpByCmd(String cmd) {
-		try {
-			ClassPathBuilder builder = isWindows() ? new LocalVMClassPathBuilder(
-					cmd) : new LocalUnixVMClassPathBuilder(cmd);
-			return builder;
-		} catch (Exception e) {
-			throw new IllegalArgumentException(
-					"Cannot attach to process by string [" + cmd
-							+ "] with error: " + e.getMessage(), e);
-		}
-	}
-
 	private static ClassPathBuilder buildCp(String[] classPaths, String javaHome) {
 		ClassPathBuilder sysbuilder = null;
 		if (javaHome != null) {
@@ -221,7 +187,7 @@ public class ClassPathFinderMain {
 			System.err.println("***** END ARGUMENTS *****");
 		}
 		if (action == 0 || action == 1) {
-			Set<String> classNames = new TreeSet<String>();
+			Set<String> classNames = new TreeSet<>();
 			for (String name : classNamePatterns) {
 				if (name.indexOf('.') < 0 || name.indexOf('*') >= 0
 						|| name.indexOf('?') >= 0) {
@@ -243,12 +209,12 @@ public class ClassPathFinderMain {
 					}
 				}
 			} else {
-				Map<String, List<String>> map = new TreeMap<String, List<String>>();
+				Map<String, List<String>> map = new TreeMap<>();
 				for (String className : classNames) {
 					for (String s : agent.findClasses(className)) {
 						List<String> list = map.get(s);
 						if (list == null) {
-							list = new ArrayList<String>();
+							list = new ArrayList<>();
 							map.put(s, list);
 						}
 						list.add(className);
@@ -294,7 +260,7 @@ public class ClassPathFinderMain {
 								+ name + "]");
 					}
 				} else if (action == 4) {
-					List<String> classNames = new ArrayList<String>(
+					List<String> classNames = new ArrayList<>(
 							Arrays.asList(finder.findAssignableFrom(name)));
 					classNames.remove(name);
 					Collections.sort(classNames);
@@ -309,7 +275,7 @@ public class ClassPathFinderMain {
 					}
 				} else if (action == 5) {
 					Map<String, List<URL>> map = finder.findDuplicates(name);
-					Map<URL, String> urlCache = new HashMap<URL, String>();
+					Map<URL, String> urlCache = new HashMap<>();
 					for (Map.Entry<String, List<URL>> entry : map.entrySet()) {
 						String className = entry.getKey();
 						int i = 0;
@@ -342,7 +308,7 @@ public class ClassPathFinderMain {
 								+ name + "]");
 					}
 				} else if (action == 7) {
-					String[] classNames = finder.findDepedencies(name);
+					String[] classNames = finder.findDependencies(name);
 					Arrays.sort(classNames);
 					if (classNames.length > 0) {
 						System.out.println("-- Dependence class for [" + name
@@ -354,7 +320,7 @@ public class ClassPathFinderMain {
 						System.err.println("-- No dependence class found for ["
 								+ name + "]");
 					}
-					classNames = finder.findNotFoundedDepedencies(name);
+					classNames = finder.findNotFoundedDependencies(name);
 					Arrays.sort(classNames);
 					if (classNames.length > 0) {
 						System.out
@@ -405,14 +371,14 @@ public class ClassPathFinderMain {
 					if (map.isEmpty()) {
 						System.err.println("-- No duplicated class found");
 					} else {
-						Map<URL, List<String>> setList = new HashMap<URL, List<String>>();
+						Map<URL, List<String>> setList = new HashMap<>();
 						for (Map.Entry<String, List<URL>> entry : map
 								.entrySet()) {
 							String className = entry.getKey();
 							for (URL url : entry.getValue()) {
 								List<String> classes = setList.get(url);
 								if (classes == null) {
-									classes = new ArrayList<String>();
+									classes = new ArrayList<>();
 									setList.put(url, classes);
 								}
 								classes.add(className);
@@ -431,7 +397,7 @@ public class ClassPathFinderMain {
 				} else if (action == 12) {
 					Map<String, Map<URL, Long>> map = finder
 							.findConflictClasses(name, false);
-					Map<URL, String> urlCache = new HashMap<URL, String>();
+					Map<URL, String> urlCache = new HashMap<>();
 					for (Map.Entry<String, Map<URL, Long>> entry : map
 							.entrySet()) {
 						String className = entry.getKey();
@@ -460,7 +426,7 @@ public class ClassPathFinderMain {
 					if (map.isEmpty()) {
 						System.err.println("-- No conflict class found");
 					} else {
-						Map<URL, Map<String, Long>> setList = new HashMap<URL, Map<String, Long>>();
+						Map<URL, Map<String, Long>> setList = new HashMap<>();
 						for (Map.Entry<String, Map<URL, Long>> entry : map
 								.entrySet()) {
 							String className = entry.getKey();
@@ -469,7 +435,7 @@ public class ClassPathFinderMain {
 								URL url = urlEntry.getKey();
 								Map<String, Long> classes = setList.get(url);
 								if (classes == null) {
-									classes = new LinkedHashMap<String, Long>();
+									classes = new LinkedHashMap<>();
 									setList.put(url, classes);
 								}
 								classes.put(className, urlEntry.getValue());
@@ -512,10 +478,6 @@ public class ClassPathFinderMain {
 		out.println("Find class name from classpath.");
 		out.println();
 		out.println("SCOPE:");
-		out.println("  -pid <PID>");
-		out.println("\t\tLookup class from the specified local process. (NOTE: Classpath longer than 1024 chars, may cause missing path item.)");
-		out.println("  -cmd <String in CMD>");
-		out.println("\t\tLookup class from the local process by string in command. (NOTE: Classpath longer than 1024 chars, may cause missing path item.)");
 		out.println("  -classpath <PATH LIST> [-jre <JAVA HOME>]");
 		out.println("\t\tLookup class from the provided class path");
 		out.println("  (EMPTY)");

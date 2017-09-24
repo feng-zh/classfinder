@@ -15,11 +15,11 @@ Usually, the developer would like to find class in one or many jar files, like t
 
 The `classfinder` library/tool is helping Java developer to find class easily inside or outside JVM without source code provided. This manual is mainly to introduce the core function for this tool running as standalone application from command line. 
 
-**NOTE: It is only supports Java 8. For prior Java version, please download classfinder v1.2.0 from <https://jitpack.io/com/github/feng-zh/classfinder/v1.2.0/classfinder-v1.2.0.jar>**
+**NOTE: It only supports Java 8. For prior Java version, please download classfinder v1.2.0 from <https://jitpack.io/com/github/feng-zh/classfinder/v1.2.0/classfinder-v1.2.0.jar>**
 
 Download
 ---
-Download classfinder v2.0.0 (Java 8 is required) from <https://jitpack.io/com/github/feng-zh/classfinder/v2.0.0/classfinder-v2.0.0-jar-with-dependencies.jar>
+Download classfinder latest version (Java 8 is required) from <https://jitpack.io/com/github/feng-zh/classfinder/v2.0.0/classfinder-v2.0.0-jar-with-dependencies.jar>
 
 Basic Usage
 -----------
@@ -75,7 +75,7 @@ In addition, a switch flag `-group` can group result by jar file name.
     -- From [C:\classfinder.jar] 
     com.hp.it.gadsc.et.ei.tools.classfinder.Util 
     ... 
-    com.hp.it.gadsc.et.ei.tools.classfinder.Util$SufixFilter 
+    com.hp.it.gadsc.et.ei.tools.classfinder.Util$SuffixFilter 
     -- From [C:\rt.jar] 
     com.sun.corba.se.impl.javax.rmi.CORBA.Util 
     com.sun.corba.se.impl.javax.rmi.CORBA.Util$1 
@@ -93,7 +93,7 @@ To list duplicate class by its simple name, or wild card names, use `-duplicate`
     C:\classfinder-dup.jar 
     C:\classfinder.jar 
     ... 
-    [com.hp.it.gadsc.et.ei.tools.classfinder.Util$SufixFilter] 
+    [com.hp.it.gadsc.et.ei.tools.classfinder.Util$SuffixFilter] 
     C:\classfinder-dup.jar 
     C:\classfinder.jar 
 
@@ -239,10 +239,6 @@ Here are the full usage for reference. Type `java -jar classfinder.jar` or incor
     Find class name from classpath. 
     
     SCOPE: 
-    -pid <PID> 
-    Lookup class from the specified local process. (NOTE: Classpath longer than 1024 chars, may cause missing path item.) 
-    -cmd <String in CMD> 
-    Lookup class from the local process by string in command. (NOTE: Classpath longer than 1024 chars, may cause missing path item.) 
     -classpath <PATH LIST> [-jre <JAVA HOME>] 
     Lookup class from the provided class path 
     (EMPTY) 
