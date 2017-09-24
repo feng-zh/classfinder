@@ -174,7 +174,7 @@ class DefaultNameMatcher implements JarCat.NameMatcher {
 	private Scanner scanner;
 	private PrintStream prompt;
 
-	private static enum NameMatchLevel {
+	private enum NameMatchLevel {
 		FullMatch, NoExtMatch {
 			@Override
 			protected String transform(String name) {
@@ -215,10 +215,10 @@ class DefaultNameMatcher implements JarCat.NameMatcher {
 
 		private NameMatchLevel[] chains;
 
-		private NameMatchLevel() {
+		NameMatchLevel() {
 		}
 
-		private NameMatchLevel(NameMatchLevel... chains) {
+		NameMatchLevel(NameMatchLevel... chains) {
 			this.chains = chains;
 		}
 

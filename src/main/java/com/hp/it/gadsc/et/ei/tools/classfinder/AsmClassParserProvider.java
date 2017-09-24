@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 
-import jdk.internal.org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassReader;
 
-@SuppressWarnings("restriction")
 public class AsmClassParserProvider implements ClassParserProvider {
 
 	private static final String[] EMPTY = new String[0];

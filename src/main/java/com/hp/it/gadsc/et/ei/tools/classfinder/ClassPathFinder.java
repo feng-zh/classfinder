@@ -29,14 +29,7 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 	private final URLClassPath urlClassPath;
 
 	private static ClassParserProvider detectParseProvider() {
-		Class<?> asmProviderType;
-		try {
-			asmProviderType = Class.forName("com.hp.it.gadsc.et.ei.tools.classfinder.AsmClassParserProvider");
-			return (ClassParserProvider) asmProviderType.newInstance();
-		} catch (Throwable e) {
-			System.err.println("WARN: Use BCEL class parsr.");
-			return new BcelClassParserProvider();
-		}
+		return new AsmClassParserProvider();
 	}
 
 	public ClassPathFinder(ClassPathBuilder builder) {

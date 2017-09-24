@@ -10,18 +10,12 @@ public class LocalUnixVMClassPathBuilder extends SystemClassPathBuilder
 
 	public LocalUnixVMClassPathBuilder(String stringInLine)
 			throws IllegalArgumentException {
-		Jps jps = null;
-		try {
-			jps = new Jps(stringInLine);
+		try(Jps jps = new Jps(stringInLine)){
 			initFromJps(jps);
 		} catch (IOException e) {
 			// cannot attach process
 			throw new IllegalArgumentException(
 					"cannot attache process with string: " + stringInLine, e);
-		} finally {
-			if (jps != null) {
-				jps.close();
-			}
 		}
 	}
 
