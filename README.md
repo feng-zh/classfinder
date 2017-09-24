@@ -73,9 +73,9 @@ In addition, a switch flag `-group` can group result by jar file name.
  
     C:\> dir /b *.jar | java -jar classfinder.jar -group Util* 
     -- From [C:\classfinder.jar] 
-    com.hp.it.gadsc.et.ei.tools.classfinder.Util 
+    Util 
     ... 
-    com.hp.it.gadsc.et.ei.tools.classfinder.Util$SuffixFilter 
+    Util$SuffixFilter 
     -- From [C:\rt.jar] 
     com.sun.corba.se.impl.javax.rmi.CORBA.Util 
     com.sun.corba.se.impl.javax.rmi.CORBA.Util$1 
@@ -89,11 +89,11 @@ In addition, a switch flag `-group` can group result by jar file name.
 To list duplicate class by its simple name, or wild card names, use `-duplicate` parameter with name parameter can list all duplicated class. The jar file name is listed by its path order, which means the effective one is in the first. 
 
     C:\>dir /b *.jar | java -jar classfinder.jar -duplicate Util* 
-    [com.hp.it.gadsc.et.ei.tools.classfinder.Util] 
+    [Util] 
     C:\classfinder-dup.jar 
     C:\classfinder.jar 
     ... 
-    [com.hp.it.gadsc.et.ei.tools.classfinder.Util$SuffixFilter] 
+    [Util$SuffixFilter] 
     C:\classfinder-dup.jar 
     C:\classfinder.jar 
 
@@ -160,13 +160,13 @@ Also to know all depending classes over the jar files, use `-depend` parameter a
 
 The result shows existing dependence class name, and non-founded dependence class names (some may related to JRE). 
 
-    C:\>dir /b *.jar | java -jar classfinder.jar -depend com.hp.it.gadsc.et.ei.tools.classfinder.Util 
-    -- Dependence class for [com.hp.it.gadsc.et.ei.tools.classfinder.Util] 
-    com.hp.it.gadsc.et.ei.tools.classfinder.AbstractClassFinder 
-    com.hp.it.gadsc.et.ei.tools.classfinder.ClassFinder 
-    com.hp.it.gadsc.et.ei.tools.classfinder.ClassLoaderFinder 
+    C:\>dir /b *.jar | java -jar classfinder.jar -depend Util 
+    -- Dependence class for [Util] 
+    AbstractClassFinder 
+    ClassFinder 
+    ClassLoaderFinder 
     ... 
-    -- Non-founded dependence class for [com.hp.it.gadsc.et.ei.tools.classfinder.Util] 
+    -- Non-founded dependence class for [Util] 
     com.sun.org.apache.bcel.internal.classfile.Attribute 
     com.sun.org.apache.bcel.internal.classfile.ClassParser 
     ... 
@@ -178,8 +178,8 @@ To get reference of the specified method in the class, use `-mref` parameter and
 
     C:\>dir /b *.jar | java -jar classfinder.jar -mref java.lang.System.exit 
     -- Reference class for Method [java.lang.System.exit] 
-    com.hp.it.gadsc.et.ei.tools.classfinder.ClassPathFinderMain 
-    com.hp.it.gadsc.et.ei.tools.classfinder.JarCat 
+    ClassPathFinderMain 
+    JarCat 
     com.sun.corba.se.impl.activation.Quit 
     com.sun.corba.se.impl.activation.ServerMain 
     com.sun.corba.se.impl.naming.cosnaming.TransientNameServer 
@@ -192,8 +192,8 @@ To get reference of the specified field in the class, use `-fref` parameter and 
 
     C:\>dir /b *.jar | java -jar classfinder.jar -fref java.lang.System.out 
     -- Reference class for Field [java.lang.System.out] 
-    com.hp.it.gadsc.et.ei.tools.classfinder.ClassPathFinderMain 
-    com.hp.it.gadsc.et.ei.tools.classfinder.JarCat 
+    ClassPathFinderMain 
+    JarCat 
     ... 
 
 

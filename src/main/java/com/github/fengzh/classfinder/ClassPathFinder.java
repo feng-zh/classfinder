@@ -1,6 +1,6 @@
-package com.hp.it.gadsc.et.ei.tools.classfinder;
+package com.github.fengzh.classfinder;
 
-import com.hp.it.gadsc.et.ei.tools.classfinder.ClassParserProvider.Jclass;
+import com.github.fengzh.classfinder.ClassParserProvider.Jclass;
 
 import java.io.IOException;
 import java.io.InputStream;

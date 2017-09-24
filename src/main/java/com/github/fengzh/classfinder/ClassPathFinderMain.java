@@ -1,4 +1,4 @@
-package com.hp.it.gadsc.et.ei.tools.classfinder;
+package com.github.fengzh.classfinder;
 
 import java.io.BufferedReader;
 import java.io.File;
