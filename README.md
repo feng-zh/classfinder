@@ -15,7 +15,7 @@ Usually, the developer would like to find class in one or many jar files, like t
 
 The `classfinder` library/tool is helping Java developer to find class easily inside or outside JVM without source code provided. This manual is mainly to introduce the core function for this tool running as standalone application from command line. 
 
-**NOTE: It only supports Java 8. For prior Java version, please download classfinder v1.2.0 from <https://jitpack.io/com/github/feng-zh/classfinder/v1.2.0/classfinder-v1.2.0.jar>**
+**NOTE: It only supports Java 8. For prior Java version, please download classfinder v1.2.2 from <https://github.com/feng-zh/classfinder/releases/download/v1.2.2/classfinder.jar>**
 
 Download
 ---
