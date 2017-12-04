@@ -5,9 +5,10 @@ import java.io.InputStream;
 import java.util.Set;
 
 import jdk.internal.org.objectweb.asm.ClassReader;
+import jdk.internal.org.objectweb.asm.Opcodes;
 
 @SuppressWarnings("restriction")
-public class AsmClassParserProvider implements ClassParserProvider {
+public class AsmClassParserProvider implements ClassParserProvider, Opcodes {
 
 	private static final String[] EMPTY = new String[0];
 
