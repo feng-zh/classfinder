@@ -41,7 +41,7 @@ abstract class AbstractClassFinder implements ClassFinder {
 
 	public Map<String, List<URL>> findDuplicates(String classNamePattern) {
 		Map<String, List<URL>> map = lookupClassAndLocation(classNamePattern);
-		Map<String, List<URL>> ret = new LinkedHashMap<String, List<URL>>();
+		Map<String, List<URL>> ret = new LinkedHashMap<>();
 		for (Map.Entry<String, List<URL>> entry : map.entrySet()) {
 			if (entry.getValue().size() > 1) {
 				ret.put(entry.getKey(), entry.getValue());
@@ -55,7 +55,7 @@ abstract class AbstractClassFinder implements ClassFinder {
 		Map<String, Map<URL, Long>> map = Util
 				.locateAllVersionedClassNamesByPattern(this,
 						Util.createNamePatternFilter(classNamePattern));
-		Map<String, Map<URL, Long>> ret = new LinkedHashMap<String, Map<URL, Long>>();
+		Map<String, Map<URL, Long>> ret = new LinkedHashMap<>();
 		for (Map.Entry<String, Map<URL, Long>> entry : map.entrySet()) {
 			if (entry.getValue().size() <= 1) {
 				// filter non duplicate or conflict

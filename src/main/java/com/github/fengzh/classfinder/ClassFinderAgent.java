@@ -17,7 +17,7 @@ public class ClassFinderAgent implements ClassFinderAgentMBean {
 
 	public List<String> findClasses(String className) {
 		URL[] urls = finder.findClasses(className);
-		List<String> paths = new ArrayList<String>();
+		List<String> paths = new ArrayList<>();
 		for (URL url : urls) {
 			paths.add(Util.toAbsolutePath(url, Util.resolveName(className)));
 		}
@@ -26,7 +26,7 @@ public class ClassFinderAgent implements ClassFinderAgentMBean {
 
 	public List<String> findCodeSources(String className) {
 		URL[] urls = finder.findCodeSources(className);
-		List<String> paths = new ArrayList<String>();
+		List<String> paths = new ArrayList<>();
 		for (URL url : urls) {
 			paths.add(Util.toAbsolutePath(url, null));
 		}
@@ -35,7 +35,7 @@ public class ClassFinderAgent implements ClassFinderAgentMBean {
 
 	public List<String> findResourceSources(String resourceName) {
 		URL[] urls = finder.findResourceSources(resourceName);
-		List<String> paths = new ArrayList<String>();
+		List<String> paths = new ArrayList<>();
 		for (URL url : urls) {
 			paths.add(Util.toAbsolutePath(url, resourceName));
 		}
@@ -44,7 +44,7 @@ public class ClassFinderAgent implements ClassFinderAgentMBean {
 
 	public List<String> findResources(String resourceName) {
 		URL[] urls = finder.findResources(resourceName);
-		List<String> paths = new ArrayList<String>();
+		List<String> paths = new ArrayList<>();
 		for (URL url : urls) {
 			paths.add(Util.toAbsolutePath(url, resourceName));
 		}
@@ -89,7 +89,7 @@ public class ClassFinderAgent implements ClassFinderAgentMBean {
 
 	public List<String> findSuperClasses(String subTypeClassName) {
 		String[] superTypes = finder.findSuperTypes(subTypeClassName);
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		for (String s : superTypes) {
 			if (!s.equals(subTypeClassName)) {
 				list.add(s);

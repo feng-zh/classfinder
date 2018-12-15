@@ -97,7 +97,7 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 
     public URL[] findResources(String resourceName) {
         Enumeration<?> resources = getURLClassPath().getResources(resourceName);
-        List<URL> list = new ArrayList<URL>();
+        List<URL> list = new ArrayList<>();
         while (resources.hasMoreElements()) {
             URLClassPath.Resource res = (URLClassPath.Resource) resources.nextElement();
             list.add(res.getURL());
@@ -116,7 +116,7 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
 
     public URL[] findResourceSources(String resourceName) {
         Enumeration<?> resources = getURLClassPath().getResources(resourceName);
-        List<URL> list = new ArrayList<URL>();
+        List<URL> list = new ArrayList<>();
         while (resources.hasMoreElements()) {
             URLClassPath.Resource res = (URLClassPath.Resource) resources.nextElement();
             list.add(res.getCodeSourceURL());
@@ -153,27 +153,18 @@ public class ClassPathFinder extends AbstractClassFinder implements ClassFinder 
     public boolean cat(String finding, PrintStream output) {
         boolean find = false;
         for (URL url : getURLClassPath().getURLs()) {
-            JarCat jarCat = null;
-            try {
-                jarCat = new JarCat(url.openStream());
+            try (JarCat jarCat = new JarCat(url.openStream())) {
                 find |= jarCat.match(new DefaultNameMatcher(finding, new Scanner(new InputStream() {
 
                     // always input Enter
                     @Override
-                    public int read() throws IOException {
+                    public int read() {
                         return '\n';
                     }
 
                 }), null), new DefaultMatchOutput(output, "::"));
             } catch (IOException e) {
                 throw new IllegalArgumentException("cannot process " + url, e);
-            } finally {
-                if (jarCat != null) {
-                    try {
-                        jarCat.close();
-                    } catch (IOException ignored) {
-                    }
-                }
             }
         }
         return find;

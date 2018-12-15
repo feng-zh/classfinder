@@ -19,7 +19,7 @@ The `classfinder` library/tool is helping Java developer to find class easily in
 
 Download
 ---
-Download classfinder latest version (Java 8 is required) from <https://jitpack.io/com/github/feng-zh/classfinder/v2.0.0/classfinder-v2.0.0-jar-with-dependencies.jar>
+Download classfinder latest version (Java 8 is required) from <https://jitpack.io/com/github/feng-zh/classfinder/v2.0.1/classfinder-v2.0.1-jar-with-dependencies.jar>
 
 Basic Usage
 -----------

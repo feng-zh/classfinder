@@ -59,7 +59,7 @@ public class JarCat implements Closeable {
 		if (output == null) {
 			throw new NullPointerException("no match out provided");
 		}
-		Map<ZipEntry, byte[]> buffer = new LinkedHashMap<ZipEntry, byte[]>();
+		Map<ZipEntry, byte[]> buffer = new LinkedHashMap<>();
 		ZipEntry zipEntry;
 		while ((zipEntry = input.getNextEntry()) != null) {
 			if (zipEntry.isDirectory())
@@ -74,7 +74,7 @@ public class JarCat implements Closeable {
 		}
 		Collection<ZipEntry> refined = buffer.keySet();
 		if (buffer.size() > 1) {
-			ArrayList<ZipEntry> entries = new ArrayList<ZipEntry>(
+			ArrayList<ZipEntry> entries = new ArrayList<>(
 					buffer.keySet());
 			refined = matcher.refine(entries);
 			if (refined == null) {
@@ -104,7 +104,7 @@ public class JarCat implements Closeable {
 	private static byte[] readEntry(ZipEntry entry, ZipInputStream inputStream)
 			throws IOException {
 		byte[] buf = new byte[1024];
-		int len = 0;
+		int len;
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		while ((len = inputStream.read(buf)) != -1) {
 			output.write(buf, 0, len);
@@ -115,30 +115,15 @@ public class JarCat implements Closeable {
 
 	public static boolean cat(InputStream jarFile, String finding,
 			InputStream input, PrintStream output) throws IOException {
-		JarCat jarCat = null;
-		try {
-			jarCat = new JarCat(jarFile);
-			if (!jarCat.match(new DefaultNameMatcher(finding,
-					input == null ? null : new Scanner(input), output),
-					new DefaultMatchOutput(output, "::"))) {
-				return false;
-			} else {
-				return true;
-			}
-		} finally {
-			if (jarCat != null) {
-				try {
-					jarCat.close();
-				} catch (IOException ignored) {
-				}
-			}
+		try (JarCat jarCat = new JarCat(jarFile)) {
+			return jarCat.match(new DefaultNameMatcher(finding,
+							input == null ? null : new Scanner(input), output),
+					new DefaultMatchOutput(output, "::"));
 		}
 	}
 
 	public void close() throws IOException {
-		if (input != null) {
-			input.close();
-		}
+		input.close();
 	}
 
 	public static void main(String[] args) {
@@ -274,7 +259,7 @@ class DefaultNameMatcher implements JarCat.NameMatcher {
 			// check level
 			NameMatchLevel selectedLevel = null;
 			ZipEntry selectedEntry = null;
-			List<ZipEntry> filterList = new ArrayList<ZipEntry>();
+			List<ZipEntry> filterList = new ArrayList<>();
 			for (ZipEntry entry : entries) {
 				NameMatchLevel level = matchWithLevel(entry, text);
 				if (level != null) {
@@ -337,7 +322,7 @@ class DefaultMatchOutput implements JarCat.MatchOutput {
 	private int count;
 	private PrintStream output;
 	private String prompt;
-	private static Map<String, String> preDefinedTypes = new HashMap<String, String>();
+	private static Map<String, String> preDefinedTypes = new HashMap<>();
 	static boolean forceCat = Boolean.getBoolean("forceCat");
 
 	static {
@@ -367,7 +352,7 @@ class DefaultMatchOutput implements JarCat.MatchOutput {
 			}
 		}
 		String contentType = guessContentTypeFromName(entry.getName());
-		if (contentType == null || !isText(contentType)) {
+		if (!isText(contentType)) {
 			contentType = URLConnection.guessContentTypeFromStream(data);
 		}
 		if (!isText(contentType) && !forceCat) {
@@ -380,7 +365,7 @@ class DefaultMatchOutput implements JarCat.MatchOutput {
 			return;
 		}
 		byte[] buf = new byte[512];
-		int len = 0;
+		int len;
 		while ((len = data.read(buf)) != -1) {
 			output.write(buf, 0, len);
 		}
@@ -412,9 +397,6 @@ class DefaultMatchOutput implements JarCat.MatchOutput {
 		if (contentType.startsWith("text/")) {
 			return true;
 		}
-		if (contentType.endsWith("/xml")) {
-			return true;
-		}
-		return false;
+		return contentType.endsWith("/xml");
 	}
 }

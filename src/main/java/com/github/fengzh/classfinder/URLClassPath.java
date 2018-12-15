@@ -23,9 +23,7 @@ public class URLClassPath {
     private ArrayList<URL> path = new ArrayList<>();
 
     public URLClassPath(URL[] urls) {
-        for (int i = 0; i < urls.length; i++) {
-            path.add(urls[i]);
-        }
+        Collections.addAll(path, urls);
         push(urls);
     }
 

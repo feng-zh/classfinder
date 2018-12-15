@@ -1,25 +1,19 @@
 package com.github.fengzh.classfinder;
 
+import org.objectweb.asm.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-
 class AsmDependencyVisitor extends ClassVisitor {
 
-	private Set<Type> dependencies = new HashSet<Type>();
+	private Set<Type> dependencies = new HashSet<>();
 
-	private Set<String> strings = new HashSet<String>();
+	private Set<String> strings = new HashSet<>();
 
-	private Set<String> methods = new HashSet<String>();
+	private Set<String> methods = new HashSet<>();
 
-	private Set<String> fields = new HashSet<String>();
+	private Set<String> fields = new HashSet<>();
 
 	private ClassReader reader;
 
@@ -44,13 +38,13 @@ class AsmDependencyVisitor extends ClassVisitor {
 	private static final int CONST_IMETH = 11;
 
 	AsmDependencyVisitor(ClassReader reader, String textToFind) {
-		super(Opcodes.ASM5);
+		super(Opcodes.ASM7);
 		this.reader = reader;
 		this.textToFind = textToFind;
 	}
 
 	public Set<String> getDependencies() {
-		Set<String> ret = new HashSet<String>(dependencies.size());
+		Set<String> ret = new HashSet<>(dependencies.size());
 		for (Type type : dependencies) {
 			if (type.getSort() == Type.ARRAY) {
 				ret.add(type.getElementType().getClassName());
@@ -179,10 +173,6 @@ class AsmDependencyVisitor extends ClassVisitor {
 		AsmDependencyVisitor visitor = new AsmDependencyVisitor(classReader, textToFind);
 		classReader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES | ClassReader.SKIP_CODE);
 		return visitor;
-	}
-
-	static int readUnsignedShort(byte[] b, final int index) {
-		return ((b[index] & 0xFF) << 8) | (b[index + 1] & 0xFF);
 	}
 
 	public static void main(String[] args) throws Exception {

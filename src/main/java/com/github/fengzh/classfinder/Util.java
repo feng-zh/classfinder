@@ -176,9 +176,7 @@ final class Util {
 			List<File> container, boolean recursive) {
 		File[] files = folder.listFiles(filter);
 		if (files != null) {
-			for (File f : files) {
-				container.add(f);
-			}
+			Collections.addAll(container, files);
 		}
 		if (recursive) {
 			for (File f : listSubFolders(folder)) {
@@ -281,12 +279,8 @@ final class Util {
 	static Map<String, List<URL>> locateAllClassNames(ClassFinder finder,
 			SelectFilter<String> filter) {
 		List<URL> list = new ArrayList<>();
-		for (URL url : finder.findResources("")) {
-			list.add(url);
-		}
-		for (URL url : finder.findResources(JarFile.MANIFEST_NAME)) {
-			list.add(url);
-		}
+		Collections.addAll(list, finder.findResources(""));
+		Collections.addAll(list, finder.findResources(JarFile.MANIFEST_NAME));
 		Map<String, List<URL>> allClassNames = new HashMap<>();
 		getAllClassNames(allClassNames, list, filter);
 		return allClassNames;
@@ -389,12 +383,8 @@ final class Util {
 	static Map<String, List<URL>> locateAllClassNamesByPattern(
 			ClassFinder finder, SelectFilter<String> filter) {
 		List<URL> list = new ArrayList<>();
-		for (URL url : finder.findResources("")) {
-			list.add(url);
-		}
-		for (URL url : finder.findResources(JarFile.MANIFEST_NAME)) {
-			list.add(url);
-		}
+		Collections.addAll(list, finder.findResources(""));
+		Collections.addAll(list, finder.findResources(JarFile.MANIFEST_NAME));
 		Map<String, List<URL>> allClassNames = new TreeMap<>();
 		getAllClassNames(allClassNames, list, filter);
 		return allClassNames;
@@ -403,12 +393,8 @@ final class Util {
 	static Map<String, Map<URL, Long>> locateAllVersionedClassNamesByPattern(
 			ClassFinder finder, SelectFilter<String> filter) {
 		List<URL> list = new ArrayList<>();
-		for (URL url : finder.findResources("")) {
-			list.add(url);
-		}
-		for (URL url : finder.findResources(JarFile.MANIFEST_NAME)) {
-			list.add(url);
-		}
+		Collections.addAll(list, finder.findResources(""));
+		Collections.addAll(list, finder.findResources(JarFile.MANIFEST_NAME));
 		Map<String, Map<URL, ClassFileAttribute>> container = new HashMap<>();
 		getAllClassNames(container, list, filter, true);
 		Map<String, Map<URL, Long>> allClassNames = new TreeMap<>();
@@ -516,7 +502,7 @@ final class Util {
 				list.add(t);
 			}
 		}
-		return (T[]) list.toArray((T[]) Array.newInstance(array.getClass().getComponentType(), 0));
+		return list.toArray((T[]) Array.newInstance(array.getClass().getComponentType(), 0));
 	}
 
 	static String toAbsolutePath(URL url, String name) {
